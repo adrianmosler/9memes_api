@@ -3,9 +3,7 @@ const Usuario = require('../models/user.schema');
 
 const app = express();
 
-
-app.get('/user', async function(req, res) {
-
+app.get('/user', async function (req, res) {
     let desde = req.query.desde || 0;
     desde = Number(desde);
 
@@ -16,25 +14,19 @@ app.get('/user', async function(req, res) {
         .skip(desde)
         .limit(limite)
         .exec((err, users) => {
-
             if (err) {
                 return res.status(400).json({
                     ok: false,
-                    err
+                    err,
                 });
             }
 
             Usuario.count({ estado: true }, (err, conteo) => {
-
                 res.json({
                     ok: true,
                     users,
-                    cuantos: conteo
+                    cuantos: conteo,
                 });
-
             });
         });
-
-
 });
-
