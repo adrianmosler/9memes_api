@@ -24,7 +24,7 @@ app.get('/', function (req, res) {
 
 // connected to DB
 connect(
-    config.MONGO_ATLAS_URL,
+    config.mongoDB,
     { useNewUrlParser: true, useCreateIndex: true },
     (err, res) => {
         if (err) throw err;

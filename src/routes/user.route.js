@@ -1,10 +1,10 @@
-const Usuario = require('../models/user.schema');
-
+//const Usuario = require('../models/user.schema');
+import Usuario from '../models/user.schema';
 import * as express from 'express';
 
 const router = express.Router();
 
-router.get('/user', async function (req, res) {
+router.get('/', async function (req, res) {
     let desde = req.query.desde || 0;
     desde = Number(desde);
 
