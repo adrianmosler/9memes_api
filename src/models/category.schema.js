@@ -1,11 +1,14 @@
 import mongoose from 'mongoose';
-import usuarioSchema from './user.schema';
 
-export let categorySchema = new mongoose.Schema({
+export const categorySchema = new mongoose.Schema({
     name: { type: String, required: true },
     description: String,
     createdAt: Date,
-    createdBy: usuarioSchema,
+    createdBy: {
+        type: Schema.Types.ObjectId,
+        ref: 'usuario',
+        name: String,
+    },
 });
 
 module.exports = mongoose.model('category', categorySchema);

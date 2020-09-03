@@ -1,6 +1,4 @@
 import mongoose from 'mongoose';
-import usuarioSchema from './user.schema';
-
 const Schema = mongoose.Schema;
 
 export let publicationSchema = new Schema({
@@ -9,15 +7,27 @@ export let publicationSchema = new Schema({
         type: String,
         required: true,
     },
-    likes: [usuarioSchema],
-    unLikes: [usuarioSchema],
-    category: [categorySchema],
+    likes: [{ type: Schema.Types.ObjectId, ref: 'usuario', required: false }],
+    unLikes: [{ type: Schema.Types.ObjectId, ref: 'usuario', required: false }],
+    // "category" queda embebida en el esquema "publication" con los datos necesarios
+    category: [
+        {
+            _id: {
+                type: Schema.Types.ObjectId,
+                ref: 'category',
+                require: false,
+            },
+            name: { type: String, required: false },
+            description: String,
+        },
+    ],
+
     img: {
         type: String,
-        required: true,
+        required: false,
     },
     createdAt: Date,
-    createdBy: usuarioSchema,
+    createdBy: { type: Schema.Types.ObjectId, ref: 'usuario' },
 });
 
-module.exports = mongoose.model('publication', PublicationSchema);
+module.exports = mongoose.model('publication', publicationSchema);
