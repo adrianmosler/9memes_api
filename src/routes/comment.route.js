@@ -1,5 +1,5 @@
-const User = require('../models/user.schema');
-const bcrypt = require('bcrypt');
+const Comment = require('../models/comment.schema');
+var mongoose = require('mongoose');
 
 import * as express from 'express';
 
@@ -33,25 +33,20 @@ router.get('/', async function (req, res) {
 router.post('/', async function (req, res) {
     let body = req.body;
 
-    let user = new User({
-        name: body.name,
-        userName: body.userName,
-        email: body.email,
-        password: bcrypt.hashSync(body.password, 10),
-        createdAt: new Date(),
-        updatedAt: new Date(),
+    let comment = new Comment({
+        description: body.description,
+        publication: mongoose.Types.ObjectId(body.publication),
+        user: mongoose.Types.ObjectId(body.user),
     });
-
-    user.save((err, userDB) => {
+    console.log(comment);
+    comment.save((err, commentDB) => {
         if (err) return res.status(400).json({ ok: false, err });
-
-        userDB.password = null;
 
         res.json({
             ok: true,
-            user: userDB,
+            user: commentDB,
         });
     });
 });
 
-export const userRoutes = router;
+export const commentRoutes = router;

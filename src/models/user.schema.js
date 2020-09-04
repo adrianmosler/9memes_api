@@ -26,7 +26,7 @@ let userSchema = new Schema({
         type: String,
         required: false,
     },
-    state: {
+    active: {
         type: Boolean,
         default: true,
     },
@@ -34,6 +34,14 @@ let userSchema = new Schema({
         type: Boolean,
         required: false,
         default: false,
+    },
+    createdAt: {
+        type: Date,
+        required: true,
+    },
+    updatedAt: {
+        type: Date,
+        required: true,
     },
 });
 
@@ -47,4 +55,4 @@ userSchema.methods.toJSON = function () {
 
 userSchema.plugin(uniqueValidator, { message: '{PATH} debe de ser único' });
 
-module.exports = mongoose.model('User', userSchema);
+module.exports = mongoose.model('user', userSchema);

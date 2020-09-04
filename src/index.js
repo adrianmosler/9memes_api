@@ -7,6 +7,7 @@ import bodyParser from 'body-parser';
 // import routes
 import { publicationRoutes } from './routes/publication.route';
 import { userRoutes } from './routes/user.route';
+import { commentRoutes } from './routes/comment.route';
 
 const app = express();
 
@@ -17,6 +18,7 @@ app.use(bodyParser.json());
 //ROUTES
 app.use('/publication', publicationRoutes);
 app.use('/user', userRoutes);
+app.use('/comment', commentRoutes);
 
 app.get('/', function (req, res) {
     res.json({ mensaje: 'Bienvenidos al servidor de 9 MEMES' });

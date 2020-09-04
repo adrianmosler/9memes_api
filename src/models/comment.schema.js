@@ -1,15 +1,24 @@
 import mongoose from 'mongoose';
-//import usuarioSchema from "./user.schema";
-import userSchema from './user.schema';
-import { publicationSchema } from './publication.schema';
 
-export let commentSchema = new mongoose.Schema({
-    name: { type: String, required: true },
-    description: { type: String, required: true },
-    publication: { type: publicationSchema, required: true },
-    user: { type: userSchema, required: true },
+let Schema = mongoose.Schema;
+
+let commentSchema = new Schema({
+    description: {
+        type: String,
+        required: true,
+    },
+    publication: {
+        type: Schema.Types.ObjectId,
+        ref: 'publication',
+        required: true,
+    },
+    user: {
+        type: Schema.Types.ObjectId,
+        ref: 'user',
+        required: true,
+    },
     createdAt: Date,
     updateAt: Date,
 });
 
-module.exports = mongoose.model('category', categorySchema);
+module.exports = mongoose.model('comment', commentSchema);
