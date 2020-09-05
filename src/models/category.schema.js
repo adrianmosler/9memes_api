@@ -3,10 +3,11 @@ import mongoose from 'mongoose';
 export const categorySchema = new mongoose.Schema({
     name: { type: String, required: true },
     description: String,
+    active: { type: Boolean, default: true },
     createdAt: Date,
     createdBy: {
-        type: Schema.Types.ObjectId,
-        ref: 'usuario',
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'user',
         name: String,
     },
 });
