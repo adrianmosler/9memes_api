@@ -3,3 +3,5 @@
 # dependencies
 node_modules/
 config.js
+
+.env

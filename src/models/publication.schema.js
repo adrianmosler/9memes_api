@@ -27,7 +27,7 @@ export let publicationSchema = new Schema({
         required: false,
     },
     createdAt: Date,
-    createdBy: { type: Schema.Types.ObjectId, ref: 'usuario' },
+    createdBy: { type: Schema.Types.ObjectId, ref: 'user' },
 });
 
 module.exports = mongoose.model('publication', publicationSchema);

@@ -1,5 +1,5 @@
 // importamos dependencias
-import * as config from '../config';
+import 'dotenv/config';
 import express from 'express';
 import { connect } from 'mongoose';
 import bodyParser from 'body-parser';
@@ -8,8 +8,13 @@ import bodyParser from 'body-parser';
 import { publicationRoutes } from './routes/publication.route';
 import { userRoutes } from './routes/user.route';
 import { commentRoutes } from './routes/comment.route';
+import { categoryRoutes } from './routes/category.route';
 
 const app = express();
+// Importamos variables globales
+const mongoDB = process.env.MONGODB_LOCAL || process.ev.MONGODB;
+const port = process.env.PORT;
+const host = process.env.HOST;
 
 //middlewares de body-parser
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -19,6 +24,7 @@ app.use(bodyParser.json());
 app.use('/publication', publicationRoutes);
 app.use('/user', userRoutes);
 app.use('/comment', commentRoutes);
+app.use('/category', categoryRoutes);
 
 app.get('/', function (req, res) {
     res.json({ mensaje: 'Bienvenidos al servidor de 9 MEMES' });
@@ -26,16 +32,17 @@ app.get('/', function (req, res) {
 
 // connected to DB
 connect(
-    config.mongoDB,
+    mongoDB,
     { useNewUrlParser: true, useCreateIndex: true },
     (err, res) => {
-        if (err) throw err;
+        if (err) console.log(err);
         else {
-            console.log('Bases de datos conectada con éxito');
+            console.log('\nBases de datos conectada con éxito');
         }
     }
 );
+
 // listening server
-app.listen(process.env.PORT, () => {
-    console.log(`9MEMEs api listening at http://localhost:${process.env.PORT}`);
+app.listen(port, () => {
+    console.log(`\n9MEMES API listening at http://${host}:${port}`);
 });
