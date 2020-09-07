@@ -12,7 +12,7 @@ import { categoryRoutes } from './routes/category.route';
 
 const app = express();
 // Importamos variables globales
-const mongoDB = process.env.MONGODB_LOCAL || process.ev.MONGODB;
+const mongoDB = process.env.MONGODB_LOCAL || process.env.MONGODB;
 const port = process.env.PORT;
 const host = process.env.HOST;
 
