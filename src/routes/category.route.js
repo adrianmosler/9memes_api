@@ -1,5 +1,6 @@
 import * as express from 'express';
 import * as ctrCategory from '../controllers/category.controller';
+import { mongo } from 'mongoose';
 const router = express.Router();
 
 const limitDefault = 10;
@@ -12,7 +13,7 @@ router.get('/', async function (req, res) {
         delete req.query.skip;
     }
     if (req.query.limit) {
-        limit = req.query.limit;
+        limit = Number(req.query.limit);
         delete req.query.limit;
     }
 
@@ -22,7 +23,14 @@ router.get('/', async function (req, res) {
         limit,
     });
     if (result.err) {
-        res.status(500).send(result.err);
+        if ((result.err.name = 'MongoError')) {
+            res.status(500).send({
+                message: 'Error en Base de Datos Mongo',
+                error: result.err,
+            });
+        } else {
+            res.status(400).send(result.err);
+        }
     } else {
         res.send(result.categories).status(200);
     }

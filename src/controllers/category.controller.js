@@ -9,12 +9,12 @@ import categorySchema from '../models/category.schema';
 export async function getAllCategories(data, skip, limit) {
     let categories = [];
     let filters = [];
-    // quitamos datos innecesarios del string
-    let name = data.filter.name.trim().toLowerCase();
+    // quitamos datos innecesarios del string name
+    let name = data.filter.name ? data.filter.name.trim().toLowerCase() : null;
     delete data.filter.name;
 
     if (name) {
-        if (name.search('^') === 0) {
+        if (name.substr(0, 1) === '^') {
             // si contiene ^ => generamos buqueda por substring con ignoreCase
             name = RegExp(`${name.slice(1)}`, 'i');
         }
@@ -26,7 +26,7 @@ export async function getAllCategories(data, skip, limit) {
         filters = filters.concat([data.filter]);
     }
 
-    const query = filters ? { $and: filters } : {};
+    const query = filters.length ? { $and: filters } : {};
     try {
         if (data.skip && data.limit) {
             categories = await categorySchema
