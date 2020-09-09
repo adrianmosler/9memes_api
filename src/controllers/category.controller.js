@@ -1,5 +1,5 @@
 import categorySchema from '../models/category.schema';
-
+import mongoose from 'mongoose';
 /**
  * Se obtienen todas las categorías según "filters"
  * @param {*} data, donde data.name puede usarse como un filtro
@@ -40,4 +40,30 @@ export async function getAllCategories(data, skip, limit) {
         return { err };
     }
     return { categories };
+}
+
+/**
+ * Se obtienen una las categorias que tenga id
+ * @param {*} data
+ */
+export async function getById(id) {
+    let category = null;
+    try {
+        let err = null;
+        let status = 400;
+        if (id && mongoose.isValidObjectId(id)) {
+            // si tiene id y si es un id válido
+            category = await categorySchema.findById(id);
+            if (!category) {
+                err = { menssage: 'Categoría no encontrada', id };
+            } else {
+                status = 200;
+            }
+        } else {
+            err = { menssage: 'Formato ID incorrecto', id };
+        }
+        return { err, status, category };
+    } catch (e) {
+        return { err: e, status: 500, category };
+    }
 }

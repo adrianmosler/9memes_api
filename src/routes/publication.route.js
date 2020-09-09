@@ -1,5 +1,6 @@
 import * as express from 'express';
 import * as ctrPublication from '../controllers/publication.controller';
+import { publicationSchema } from '../models/publication.schema';
 const router = express.Router();
 
 const limitDefault = 5;
@@ -40,7 +41,7 @@ router.get('/:id', async function (req, res) {
     if (result.err) {
         if (result.status === 500) {
             res.status(500).send({
-                message: 'Error en Base de Datos',
+                message: 'Error al realizar la consulta',
                 error: result.err,
             });
         } else {
@@ -52,8 +53,21 @@ router.get('/:id', async function (req, res) {
 });
 
 router.post('/', async function (req, res) {
-    const publication = req.body.publication;
-    res.json({});
+    const body = req.body;
+    const resp = await ctrPublication.save(req.body);
+
+    if (resp.err) {
+        if (resp.status === 500) {
+            res.status(500).send({
+                message: 'Error al realizar la consulta',
+                error: resp.err,
+            });
+        } else {
+            res.status(resp.status).send(resp.err);
+        }
+    } else {
+        res.send(resp.publication).status(resp.status);
+    }
 });
 
 router.put('/:id', async function (req, res) {

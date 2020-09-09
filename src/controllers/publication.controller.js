@@ -1,5 +1,7 @@
 import publicationSchema from '../models/publication.schema';
 import mongoose from 'mongoose';
+import * as ctrCategory from '../controllers/category.controller';
+import * as ctrUser from '../controllers/user.controller';
 
 /**
  * Se obtienen todas las publicaciones que cumplan con ciertos filtros "data.filters"
@@ -67,7 +69,7 @@ export async function getAllPublications(data) {
 }
 
 /**
- * Se obtienen una las publicación que tenga id
+ * Se obtienen la publicación que tenga id
  * @param {*} data
  */
 export async function getById(id) {
@@ -89,5 +91,72 @@ export async function getById(id) {
         return { err, status, publication };
     } catch (e) {
         return { err: e, status: 500, publication };
+    }
+}
+
+/**
+ *
+ * @param {} data recibe los datos de la publicacion al guardar
+ */
+export async function save(data) {
+    let user = data.user;
+    const img = data.img; // falta
+
+    if (
+        !data.title ||
+        !data.description ||
+        !data.category?.length ||
+        !user?._id
+    ) {
+        return {
+            err: { menssage: 'Faltan parámetros requeridos' },
+            status: 400,
+        };
+    }
+
+    // obtenemos solo las de categorías activas de la BD
+    const category = await Promise.all(
+        data.category.map(async (cat) => {
+            let resp = await ctrCategory.getById(cat._id);
+            if (!resp.err && resp.category?.active) {
+                return {
+                    _id: resp.category._id,
+                    name: resp.category.name,
+                    description: resp.category.description,
+                };
+            }
+        })
+    );
+
+    if (!category.length) {
+        return { err: { menssage: 'Category no encontrada' }, status: 400 };
+    }
+
+    // obtenemos el usuario de la BD
+    const usrResp = await ctrUser.getById(user._id);
+    const userFound = usrResp.user;
+    if ((usrResp.err && !userFound) || !userFound.active) {
+        return {
+            err: { menssage: 'Usuario no encontrado', error: usrResp.err },
+            status: 400,
+        };
+    }
+    try {
+        let publication = new publicationSchema({
+            title: data.title,
+            description: data.description,
+            category,
+            likes: [],
+            unLikes: [],
+            img,
+            createdAt: new Date(),
+            createdBy: { _id: userFound._id, userName: userFound.userName },
+        });
+
+        const respSave = await publication.save();
+
+        return { err: null, status: 200, publication: respSave };
+    } catch (e) {
+        return { err: e, status: 500, publication: null };
     }
 }

@@ -23,9 +23,9 @@ router.get('/', async function (req, res) {
         limit,
     });
     if (result.err) {
-        if ((result.err.name = 'MongoError')) {
+        if (result.status === 500) {
             res.status(500).send({
-                message: 'Error en Base de Datos Mongo',
+                message: 'Error al realizar la consulta',
                 error: result.err,
             });
         } else {
@@ -37,8 +37,19 @@ router.get('/', async function (req, res) {
 });
 
 router.get('/:id', async function (req, res) {
-    const id = req.params.id;
-    res.json({});
+    const result = await ctrCategory.getById(req.params.id);
+    if (result.err) {
+        if (result.status === 500) {
+            res.status(500).send({
+                message: 'Error al realizar la consulta',
+                error: result.err,
+            });
+        } else {
+            res.status(result.status).send(result.err);
+        }
+    } else {
+        res.send(result.category).status(result.status);
+    }
 });
 
 router.post('/', async function (req, res) {
