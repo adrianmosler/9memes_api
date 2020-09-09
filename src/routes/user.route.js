@@ -32,23 +32,21 @@ router.get('/', async function (req, res) {
 });
 
 router.get('/:id', async function (req, res) {
-    User.find({ _id : req.params.id })
-        .exec((err, userDB) => {
-
-            if (!userDB) {
-                return res.status(400).json({
-                    ok: false,
-                    err: {
-                        message: 'Usuario no encontrado'
-                    }
-                });
-            }
-
-            res.json({
-                ok: true,
-                userDB,
+    User.find({ _id: req.params.id }).exec((err, userDB) => {
+        if (!userDB) {
+            return res.status(400).json({
+                ok: false,
+                err: {
+                    message: 'Usuario no encontrado',
+                },
             });
+        }
+
+        res.json({
+            ok: true,
+            userDB,
         });
+    });
 });
 
 router.post('/', async function (req, res) {
@@ -76,69 +74,72 @@ router.post('/', async function (req, res) {
 });
 
 router.put('/:id', async function (req, res) {
-
     let id = req.params.id;
     let body = _.pick(req.body, ['name', 'img', 'active']);
 
-    User.findByIdAndUpdate(id, body, { new: true, runValidators: true }, (err, userDB) => {
-        
-        if (!userDB) {
-            return res.status(400).json({
-                ok: false,
-                err: {
-                    message: 'Usuario no encontrado'
-                }
+    User.findByIdAndUpdate(
+        id,
+        body,
+        { new: true, runValidators: true },
+        (err, userDB) => {
+            if (!userDB) {
+                return res.status(400).json({
+                    ok: false,
+                    err: {
+                        message: 'Usuario no encontrado',
+                    },
+                });
+            }
+
+            if (err) {
+                return res.status(400).json({
+                    ok: false,
+                    err,
+                });
+            }
+
+            res.json({
+                ok: true,
+                usuario: userDB,
             });
         }
-
-        if (err) {
-            return res.status(400).json({
-                ok: false,
-                err
-            });
-        }
-
-        res.json({
-            ok: true,
-            usuario: userDB
-        });
-
-    })
+    );
 });
 
-
-router.delete('/:id', function(req, res) {
+router.delete('/:id', function (req, res) {
     let id = req.params.id;
 
     let logicDelete = {
-        active: false
+        active: false,
     };
 
-    User.findByIdAndUpdate(id, logicDelete, { new: true }, (err, userLogicDelete) => {
+    User.findByIdAndUpdate(
+        id,
+        logicDelete,
+        { new: true },
+        (err, userLogicDelete) => {
+            if (!userLogicDelete) {
+                return res.status(400).json({
+                    ok: false,
+                    err: {
+                        message: 'Usuario no encontrado',
+                    },
+                });
+            }
 
+            if (err) {
+                return res.status(400).json({
+                    ok: false,
+                    err,
+                });
+            }
 
-        if (!userLogicDelete) {
-            return res.status(400).json({
-                ok: false,
-                err: {
-                    message: 'Usuario no encontrado'
-                }
+            res.json({
+                ok: true,
+                user: userLogicDelete,
             });
         }
-
-        if (err) {
-            return res.status(400).json({
-                ok: false,
-                err
-            });
-        };
-
-        res.json({
-            ok: true,
-            user: userLogicDelete
-        });
-
-    });
+    );
 });
 
 export const userRoutes = router;

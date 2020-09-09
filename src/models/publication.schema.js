@@ -17,7 +17,7 @@ export let publicationSchema = new Schema({
                 ref: 'category',
                 require: false,
             },
-            name: { type: String, required: false },
+            name: { type: String, required: true },
             description: String,
         },
     ],
@@ -27,7 +27,10 @@ export let publicationSchema = new Schema({
         required: false,
     },
     createdAt: Date,
-    createdBy: { type: Schema.Types.ObjectId, ref: 'user' },
+    createdBy: {
+        _id: { type: Schema.Types.ObjectId, ref: 'user' },
+        userName: { type: String, required: true },
+    },
 });
 
 module.exports = mongoose.model('publication', publicationSchema);

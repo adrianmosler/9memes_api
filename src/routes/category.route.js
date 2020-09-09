@@ -1,5 +1,6 @@
 import * as express from 'express';
 import * as ctrCategory from '../controllers/category.controller';
+import { mongo } from 'mongoose';
 const router = express.Router();
 
 const limitDefault = 10;
@@ -12,7 +13,7 @@ router.get('/', async function (req, res) {
         delete req.query.skip;
     }
     if (req.query.limit) {
-        limit = req.query.limit;
+        limit = Number(req.query.limit);
         delete req.query.limit;
     }
 
@@ -22,15 +23,33 @@ router.get('/', async function (req, res) {
         limit,
     });
     if (result.err) {
-        res.status(500).send(result.err);
+        if (result.status === 500) {
+            res.status(500).send({
+                message: 'Error al realizar la consulta',
+                error: result.err,
+            });
+        } else {
+            res.status(400).send(result.err);
+        }
     } else {
         res.send(result.categories).status(200);
     }
 });
 
 router.get('/:id', async function (req, res) {
-    const id = req.params.id;
-    res.json({});
+    const result = await ctrCategory.getById(req.params.id);
+    if (result.err) {
+        if (result.status === 500) {
+            res.status(500).send({
+                message: 'Error al realizar la consulta',
+                error: result.err,
+            });
+        } else {
+            res.status(result.status).send(result.err);
+        }
+    } else {
+        res.send(result.category).status(result.status);
+    }
 });
 
 router.post('/', async function (req, res) {
