@@ -22,7 +22,10 @@
         "jsonwebtoken": "^8.5.1",
         "mongoose": "^5.10.2",
         "mongoose-unique-validator": "^2.0.3",
-        "underscore": "^1.11.0"
+        "underscore": "^1.11.0",
+        "@babel/core": "^7.11.5",
+        "@babel/node": "^7.10.5",
+        "@babel/preset-env": "^7.11.5"
     },
     "devDependencies": {
         "@babel/core": "^7.11.5",
