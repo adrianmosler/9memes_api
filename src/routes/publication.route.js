@@ -3,7 +3,7 @@ import * as ctrPublication from '../controllers/publication.controller';
 import { publicationSchema } from '../models/publication.schema';
 const router = express.Router();
 
-const limitDefault = 5;
+const limitDefault = 20;
 
 router.get('/', async function (req, res) {
     let skip = 0;
