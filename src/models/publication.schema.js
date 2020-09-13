@@ -5,7 +5,7 @@ export let publicationSchema = new Schema({
     title: { type: String, required: true },
     description: {
         type: String,
-        required: true,
+        required: false, //TODO regresar a true
     },
     likes: [{ type: Schema.Types.ObjectId, ref: 'usuario', required: false }],
     unLikes: [{ type: Schema.Types.ObjectId, ref: 'usuario', required: false }],
@@ -29,7 +29,7 @@ export let publicationSchema = new Schema({
     createdAt: Date,
     createdBy: {
         _id: { type: Schema.Types.ObjectId, ref: 'user' },
-        userName: { type: String, required: true },
+        userName: { type: String, required: false },//TODO regresar a true
     },
 });
 

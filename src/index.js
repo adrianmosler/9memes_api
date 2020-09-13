@@ -3,6 +3,7 @@ import 'dotenv/config';
 import express from 'express';
 import { connect } from 'mongoose';
 import bodyParser from 'body-parser';
+import fileUpload from 'express-fileupload';
 
 // import routes
 import { publicationRoutes } from './routes/publication.route';
@@ -19,6 +20,7 @@ const host = process.env.HOST;
 //middlewares de body-parser
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
+app.use(fileUpload());
 
 //ROUTES
 app.use('/publication', publicationRoutes);
