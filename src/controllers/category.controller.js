@@ -1,4 +1,4 @@
-import categorySchema from '../models/category.schema';
+import categorySchema from './../models/category.schema';
 import mongoose from 'mongoose';
 /**
  * Se obtienen todas las categorías según "filters"

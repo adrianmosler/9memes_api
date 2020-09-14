@@ -1,9 +1,14 @@
 // importamos dependencias
-import 'dotenv/config';
+
+require('dotenv/config');
 import express from 'express';
 import { connect } from 'mongoose';
 import bodyParser from 'body-parser';
 import fileUpload from 'express-fileupload';
+import session from 'express-session';
+// import auth
+import passport from 'passport';
+import * as auth from './auth/autentication';
 
 // import routes
 import { publicationRoutes } from './routes/publication.route';
@@ -12,15 +17,26 @@ import { commentRoutes } from './routes/comment.route';
 import { categoryRoutes } from './routes/category.route';
 
 const app = express();
+
 // Importamos variables globales
 const mongoDB = process.env.MONGODB_LOCAL || process.env.MONGODB;
 const port = process.env.PORT;
 const host = process.env.HOST;
 
-//middlewares de body-parser
-app.use(bodyParser.urlencoded({ extended: false }));
+//middlewares
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(fileUpload());
+
+app.use(
+    session({
+        secret: process.env.KEY,
+        resave: true,
+        saveUninitialized: true,
+    })
+);
+app.use(passport.initialize());
+app.use(passport.session());
 
 //ROUTES
 app.use('/publication', publicationRoutes);
@@ -37,7 +53,7 @@ connect(
     mongoDB,
     { useNewUrlParser: true, useCreateIndex: true },
     (err, res) => {
-        if (err) console.log(err);
+        if (err) console.log('ERROR al intentar conectarse con la BD', err);
         else {
             console.log('\nBases de datos conectada con éxito');
         }

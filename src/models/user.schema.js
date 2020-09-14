@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import uniqueValidator from 'mongoose-unique-validator';
+import bcrypt from 'bcrypt';
 
 let Schema = mongoose.Schema;
 
@@ -54,5 +55,17 @@ userSchema.methods.toJSON = function () {
 };
 
 userSchema.plugin(uniqueValidator, { message: '{PATH} debe de ser único' });
+
+// ciframos password
+userSchema.methods.encryptPassword = async function (password) {
+    const salt = await bcrypt.genSalt(Number(process.env.CANTSALT));
+    return bcrypt.hash(password, salt);
+};
+
+//comparamos password
+userSchema.methods.matchPassword = async function (password) {
+    const compare = await bcrypt.compare(password, this.password);
+    return compare;
+};
 
 module.exports = mongoose.model('user', userSchema);

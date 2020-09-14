@@ -54,11 +54,11 @@ router.get('/:id', async function (req, res) {
     }
 });
 
-router.get('/img/:img', async function(req, res){
-    const pathImg = path.resolve(__dirname, '../uploads/'+req.params.img);
+router.get('/img/:img', async function (req, res) {
+    const pathImg = path.resolve(__dirname, '../uploads/' + req.params.img);
     const pathNoImg = path.resolve(__dirname, '../assets/images/no_image.jpg');
 
-    if( fs.existsSync(pathImg) ) res.sendFile(pathImg);
+    if (fs.existsSync(pathImg)) res.sendFile(pathImg);
     else res.sendFile(pathNoImg);
 });
 
