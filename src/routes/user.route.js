@@ -1,12 +1,13 @@
 const User = require('../models/user.schema');
 const bcrypt = require('bcrypt');
 const _ = require('underscore');
+const { tokenVerify } = require('../middlewares/authentication')
 
 import * as express from 'express';
 
 const router = express.Router();
 
-router.get('/', async function (req, res) {
+router.get('/', tokenVerify ,async function (req, res) {
     let begin = req.query.begin || 0;
     begin = Number(begin);
 
