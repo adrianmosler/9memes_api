@@ -1,7 +1,7 @@
-import publicationSchema from '../models/publication.schema';
+import publicationSchema from './../models/publication.schema';
 import mongoose from 'mongoose';
 import * as ctrCategory from '../controllers/category.controller';
-import * as ctrUser from '../controllers/user.controller';
+import * as ctrUser from './../controllers/user.controller';
 
 /**
  * Se obtienen todas las publicaciones que cumplan con ciertos filtros "data.filters"

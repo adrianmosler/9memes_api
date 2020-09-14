@@ -1,6 +1,6 @@
 import * as express from 'express';
 import * as ctrPublication from '../controllers/publication.controller';
-import { publicationSchema } from '../models/publication.schema';
+
 const router = express.Router();
 
 const limitDefault = 20;

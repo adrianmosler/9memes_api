@@ -1,10 +1,12 @@
-const User = require('../models/user.schema');
-const bcrypt = require('bcrypt');
+// const bcrypt = require('bcrypt');
 const _ = require('underscore');
 
+import passport from 'passport';
 import * as express from 'express';
-
 const router = express.Router();
+
+import User from './../models/user.schema';
+import * as ctrUser from './../controllers/user.controller';
 
 router.get('/', async function (req, res) {
     let begin = req.query.begin || 0;
@@ -49,28 +51,41 @@ router.get('/:id', async function (req, res) {
     });
 });
 
-router.post('/', async function (req, res) {
-    let body = req.body;
+router.post('/login', passport.authenticate('local'), function (req, res) {
+    // req.session.save((err) => {
+    //     if (err) {
+    //         return { err };
+    //     }
+    //     res.redirect('/');
+    // });
+    console.log('--------req', req);
+    console.log('res=>', res);
+    //res.json(res);
+    res.redirect('/publication');
+    // if (!res) {
+    //     return {
+    //         err: 'Error en auteticatión',
+    //         status: 400,
+    //         user: null,
+    //     };
+    // } else {
+    //     return {
+    //         user: res,
+    //         status: 200,
+    //     };
+    // }
+});
 
-    let user = new User({
-        name: body.name,
-        userName: body.userName,
-        email: body.email,
-        password: bcrypt.hashSync(body.password, 10),
-        createdAt: new Date(),
-        updatedAt: new Date(),
-    });
-
-    user.save((err, userDB) => {
-        if (err) return res.status(400).json({ ok: false, err });
-
-        userDB.password = null;
-
+router.post('/signup', async function (req, res) {
+    const resp = await ctrUser.register(req.body);
+    if (resp.err) {
+        res.status(resp.status).json({ ok: false, err: resp.err });
+    } else {
         res.json({
             ok: true,
-            user: userDB,
+            user: resp.userDB,
         });
-    });
+    }
 });
 
 router.put('/:id', async function (req, res) {
