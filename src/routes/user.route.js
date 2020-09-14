@@ -44,7 +44,7 @@ router.get('/:id', async function (req, res) {
 
         res.json({
             ok: true,
-            userDB,
+            user: userDB,
         });
     });
 });
@@ -100,7 +100,7 @@ router.put('/:id', async function (req, res) {
 
             res.json({
                 ok: true,
-                usuario: userDB,
+                user: userDB,
             });
         }
     );

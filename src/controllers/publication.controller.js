@@ -99,14 +99,16 @@ export async function getById(id) {
  * @param {} data recibe los datos de la publicacion al guardar
  */
 export async function save(data) {
-    let user = data.user;
-    const img = data.img; // falta
+    const user = JSON.parse(data.body.user);
+    const img = data.files?.img ; // falta
+    const categoryArray = JSON.parse(data.body.category);
 
     if (
-        !data.title ||
-        !data.description ||
-        !data.category?.length ||
-        !user?._id
+        !data.body.title ||
+        //!data.body.description ||
+        !categoryArray.length ||
+        !user?._id ||
+        !img
     ) {
         return {
             err: { menssage: 'Faltan parámetros requeridos' },
@@ -116,7 +118,7 @@ export async function save(data) {
 
     // obtenemos solo las de categorías activas de la BD
     const category = await Promise.all(
-        data.category.map(async (cat) => {
+            categoryArray.map(async (cat) => {
             let resp = await ctrCategory.getById(cat._id);
             if (!resp.err && resp.category?.active) {
                 return {
@@ -141,14 +143,39 @@ export async function save(data) {
             status: 400,
         };
     }
+    //guardamos la imagen
+    const validExtensions = ['png','jpg','gif','jpeg'];
+    const nameImgCut = img.name.split('.');
+    const extension = nameImgCut[nameImgCut.length -1];
+    const generalSrc = 'src/uploads/';
+    const imgNameServer = new Date().getTime()+img.name;
+    const imgSrcServer = generalSrc+ imgNameServer;
+
+    if(validExtensions.indexOf(extension) < 0){
+        return {
+            err: { menssage: 'Extensión imagen no permitida. Los formatos habilitados son png, jpg, jpeg y gif', error: '' },
+            status: 400,
+        };
+
+    }
+
+    img.mv( imgSrcServer , function(err) {
+        if (err){
+            return {
+                err: { menssage: 'Error al subir imagen', error: err },
+                status: 500,
+            };
+        }
+      });
+
     try {
         let publication = new publicationSchema({
-            title: data.title,
+            title: data.body.title,
             description: data.description,
             category,
             likes: [],
             unLikes: [],
-            img,
+            img : imgNameServer,
             createdAt: new Date(),
             createdBy: { _id: userFound._id, userName: userFound.userName },
         });

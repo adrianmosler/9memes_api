@@ -1,6 +1,8 @@
 import * as express from 'express';
 import * as ctrPublication from '../controllers/publication.controller';
 import { publicationSchema } from '../models/publication.schema';
+import * as path from 'path';
+import * as fs from 'fs';
 const router = express.Router();
 
 const limitDefault = 20;
@@ -52,9 +54,17 @@ router.get('/:id', async function (req, res) {
     }
 });
 
+router.get('/img/:img', async function(req, res){
+    const pathImg = path.resolve(__dirname, '../uploads/'+req.params.img);
+    const pathNoImg = path.resolve(__dirname, '../assets/images/no_image.jpg');
+
+    if( fs.existsSync(pathImg) ) res.sendFile(pathImg);
+    else res.sendFile(pathNoImg);
+});
+
 router.post('/', async function (req, res) {
     const body = req.body;
-    const resp = await ctrPublication.save(req.body);
+    const resp = await ctrPublication.save(req);
 
     if (resp.err) {
         if (resp.status === 500) {

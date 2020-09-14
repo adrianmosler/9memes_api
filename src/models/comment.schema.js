@@ -17,8 +17,14 @@ let commentSchema = new Schema({
         ref: 'user',
         required: true,
     },
-    createdAt: Date,
-    updateAt: Date,
+    createdAt: {
+        type: Date,
+        required: true,
+    },
+    updatedAt: {
+        type: Date,
+        required: true,
+    },
 });
 
 module.exports = mongoose.model('comment', commentSchema);
