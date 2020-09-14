@@ -99,16 +99,15 @@ export async function getById(id) {
  * @param {} data recibe los datos de la publicacion al guardar
  */
 export async function save(data) {
-    let user = data.body.user;
+    const user = JSON.parse(data.body.user);
     const img = data.files?.img ; // falta
-
-    console.log(data.body)
+    const categoryArray = JSON.parse(data.body.category);
 
     if (
         !data.body.title ||
         //!data.body.description ||
-       // !data.category?.length ||
-       // !user?._id ||
+        !categoryArray.length ||
+        !user?._id ||
         !img
     ) {
         return {
@@ -118,8 +117,8 @@ export async function save(data) {
     }
 
     // obtenemos solo las de categorías activas de la BD
-/*     const category = await Promise.all(
-        data.body.category.map(async (cat) => {
+    const category = await Promise.all(
+            categoryArray.map(async (cat) => {
             let resp = await ctrCategory.getById(cat._id);
             if (!resp.err && resp.category?.active) {
                 return {
@@ -129,21 +128,21 @@ export async function save(data) {
                 };
             }
         })
-    ); */
+    );
 
-/*     if (!category.length) {
+    if (!category.length) {
         return { err: { menssage: 'Category no encontrada' }, status: 400 };
     }
- */
+
     // obtenemos el usuario de la BD
-/*     const usrResp = await ctrUser.getById(user._id);
+    const usrResp = await ctrUser.getById(user._id);
     const userFound = usrResp.user;
     if ((usrResp.err && !userFound) || !userFound.active) {
         return {
             err: { menssage: 'Usuario no encontrado', error: usrResp.err },
             status: 400,
         };
-    } */
+    }
     //guardamos la imagen
     const validExtensions = ['png','jpg','gif','jpeg'];
     const nameImgCut = img.name.split('.');
@@ -172,13 +171,13 @@ export async function save(data) {
     try {
         let publication = new publicationSchema({
             title: data.body.title,
-          //  description: data.description,
-           // category,
+            description: data.description,
+            category,
             likes: [],
             unLikes: [],
             img : imgNameServer,
             createdAt: new Date(),
-           // createdBy: { _id: userFound._id, userName: userFound.userName },
+            createdBy: { _id: userFound._id, userName: userFound.userName },
         });
 
         const respSave = await publication.save();
