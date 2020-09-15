@@ -1,6 +1,5 @@
 import * as express from 'express';
 import * as ctrCategory from '../controllers/category.controller';
-//import { mongo } from 'mongoose';
 const router = express.Router();
 
 const limitDefault = 10;

@@ -8,7 +8,7 @@ import fileUpload from 'express-fileupload';
 import session from 'express-session';
 // import auth
 import passport from 'passport';
-import * as auth from './auth/autentication';
+import * as auth from './auth/authentication-jwt';
 
 // import routes
 import { publicationRoutes } from './routes/publication.route';

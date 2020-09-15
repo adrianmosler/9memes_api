@@ -1,5 +1,6 @@
 import userSchema from './../models/user.schema';
 import mongoose from 'mongoose';
+import jwt from 'jsonwebtoken';
 
 /**
  * Se obtienen el usuario tenga id
@@ -65,10 +66,43 @@ export async function register(data) {
     user.password = await user.encryptPassword(data.password);
     try {
         let userDB = await user.save();
-        userDB.password = null; // eliminamos password para que no sea enviada
+        userDB.password = null; // eliminamos password para que no se envíe
         return { err: null, status: 200, userDB };
     } catch (err) {
-        return { err: 'Error al intentar insertar el usuario', status: 500 };
+        return { err: 'Error al intentar guardar el usuario', status: 500 };
+    }
+}
+
+export async function login(email, password) {
+    const user = await userSchema.findOne({
+        email: RegExp(email, 'i'),
+        active: true,
+    });
+    if (!user) {
+        return {
+            status: 401,
+            ok: false,
+            err: 'Autenticación fallida. Usuario no encontrado.',
+        };
+    } else {
+        const match = await user.matchPassword(password);
+        if (match) {
+            // si el usuario es encontrado y la password es correcta se crea token
+            const token = jwt.sign({ user }, process.env.KEY, {
+                expiresIn: 604800,
+            });
+            return {
+                status: 200,
+                ok: true,
+                token: 'JWT ' + token,
+            };
+        } else {
+            return {
+                status: 401,
+                ok: false,
+                err: 'Autenticación fallida. Password incorrecta',
+            };
+        }
     }
 }
 

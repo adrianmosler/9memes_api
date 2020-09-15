@@ -43,7 +43,6 @@ router.get('/:id', async function (req, res) {
                 },
             });
         }
-
         res.json({
             ok: true,
             user: userDB,
@@ -51,29 +50,20 @@ router.get('/:id', async function (req, res) {
     });
 });
 
-router.post('/login', passport.authenticate('local'), function (req, res) {
-    // req.session.save((err) => {
-    //     if (err) {
-    //         return { err };
-    //     }
-    //     res.redirect('/');
-    // });
-    console.log('--------req', req);
-    console.log('res=>', res);
-    //res.json(res);
-    res.redirect('/publication');
-    // if (!res) {
-    //     return {
-    //         err: 'Error en auteticatión',
-    //         status: 400,
-    //         user: null,
-    //     };
-    // } else {
-    //     return {
-    //         user: res,
-    //         status: 200,
-    //     };
-    // }
+router.post('/signin', async function (req, res) {
+    if (req.body.email && req.body.password) {
+        const resp = await ctrUser.login(req.body.email, req.body.password);
+        if (!resp.err) {
+            res.status(resp.status).json({ ok: true, token: resp.token });
+        } else {
+            res.status(resp.status).json({ ok: false, err: resp.err });
+        }
+    } else {
+        res.status(400).json({
+            ok: false,
+            err: 'Error: Faltan parámetros',
+        });
+    }
 });
 
 router.post('/signup', async function (req, res) {
