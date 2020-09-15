@@ -1,5 +1,9 @@
 import * as express from 'express';
 import * as ctrPublication from '../controllers/publication.controller';
+import passport from 'passport';
+import * as milddware from '../auth/authentication-jwt';
+//require('./../auth/authentication-jwt')(passport);
+import userSchema from './../models/user.schema';
 
 const router = express.Router();
 
@@ -52,10 +56,47 @@ router.get('/:id', async function (req, res) {
     }
 });
 
-router.post('/', async function (req, res) {
-    const body = req.body;
-    const resp = await ctrPublication.save(req.body);
+const getToken = function (headers) {
+    if (headers && headers.authorization) {
+        var parted = headers.authorization.split(' ');
+        if (parted.length === 2) {
+            return parted[1];
+        } else {
+            return null;
+        }
+    } else {
+        return null;
+    }
+};
 
+/**
+ * middleware for checking authorization with jwt
+ */
+async function authorized(req, res) {
+    await passport.authenticate(
+        'jwt',
+        { session: false },
+        async (error, user) => {
+            console.log(
+                'ERROR: LLEGAN LOS DATOS VACIOS(error, user)=(NULL,FALSE)=>',
+                error,
+                user
+            );
+            if (error || !user) {
+                res.status(401).json({ message: 'Unauthorized' });
+            }
+            try {
+                const user = await userSchema.findOne({ email: token.email });
+                return user;
+            } catch (err) {
+                return { err, status: 500 };
+            }
+        }
+    )(req, res);
+}
+
+router.post('/', authorized, async function (req, res) {
+    const resp = await ctrPublication.save(req.body);
     if (resp.err) {
         if (resp.status === 500) {
             res.status(500).send({
