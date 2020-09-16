@@ -2,6 +2,7 @@ import publicationSchema from '../models/publication.schema';
 import mongoose from 'mongoose';
 import * as ctrCategory from '../controllers/category.controller';
 import * as ctrUser from '../controllers/user.controller';
+const cloudinary = require('cloudinary');
 
 /**
  * Se obtienen todas las publicaciones que cumplan con ciertos filtros "data.filters"
@@ -159,14 +160,17 @@ export async function save(data) {
 
     }
 
-    img.mv( imgSrcServer , function(err) {
-        if (err){
+    let responseImg;
+    await img.mv( imgSrcServer);
+        try {
+            responseImg = await cloudinary.v2.uploader.upload(imgSrcServer); 
+        } catch (error) {
             return {
-                err: { menssage: 'Error al subir imagen', error: err },
+                err: { menssage: 'Error al subir imagen a servidor remoto', error: '' },
                 status: 500,
             };
-        }
-      });
+        } 
+
 
     try {
         let publication = new publicationSchema({
@@ -175,10 +179,11 @@ export async function save(data) {
             category,
             likes: [],
             unLikes: [],
-            img : imgNameServer,
+            img : responseImg,
             createdAt: new Date(),
             createdBy: { _id: userFound._id, userName: userFound.userName },
         });
+
 
         const respSave = await publication.save();
 
