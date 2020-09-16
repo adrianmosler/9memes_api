@@ -23,7 +23,7 @@ export let publicationSchema = new Schema({
     ],
 
     img: {
-        type: String,
+        type: mongoose.Mixed ,
         required: false,
     },
     createdAt: Date,
