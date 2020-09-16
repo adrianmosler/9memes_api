@@ -101,7 +101,7 @@ export async function getById(id) {
  */
 export async function save(data) {
     const user = JSON.parse(data.body.user);
-    const img = data.files?.img ; // falta
+    const img = data.files?.img; // falta
     const categoryArray = JSON.parse(data.body.category);
 
     if (
@@ -119,7 +119,7 @@ export async function save(data) {
 
     // obtenemos solo las de categorías activas de la BD
     const category = await Promise.all(
-            categoryArray.map(async (cat) => {
+        categoryArray.map(async (cat) => {
             let resp = await ctrCategory.getById(cat._id);
             if (!resp.err && resp.category?.active) {
                 return {
@@ -145,32 +145,37 @@ export async function save(data) {
         };
     }
     //guardamos la imagen
-    const validExtensions = ['png','jpg','gif','jpeg'];
+    const validExtensions = ['png', 'jpg', 'gif', 'jpeg'];
     const nameImgCut = img.name.split('.');
-    const extension = nameImgCut[nameImgCut.length -1];
+    const extension = nameImgCut[nameImgCut.length - 1];
     const generalSrc = 'src/uploads/';
-    const imgNameServer = new Date().getTime()+img.name;
-    const imgSrcServer = generalSrc+ imgNameServer;
+    const imgNameServer = new Date().getTime() + img.name;
+    const imgSrcServer = generalSrc + imgNameServer;
 
-    if(validExtensions.indexOf(extension) < 0){
+    if (validExtensions.indexOf(extension) < 0) {
         return {
-            err: { menssage: 'Extensión imagen no permitida. Los formatos habilitados son png, jpg, jpeg y gif', error: '' },
+            err: {
+                menssage:
+                    'Extensión imagen no permitida. Los formatos habilitados son png, jpg, jpeg y gif',
+                error: '',
+            },
             status: 400,
         };
-
     }
 
     let responseImg;
-    await img.mv( imgSrcServer);
-        try {
-            responseImg = await cloudinary.v2.uploader.upload(imgSrcServer); 
-        } catch (error) {
-            return {
-                err: { menssage: 'Error al subir imagen a servidor remoto', error: '' },
-                status: 500,
-            };
-        } 
-
+    await img.mv(imgSrcServer);
+    try {
+        responseImg = await cloudinary.v2.uploader.upload(imgSrcServer);
+    } catch (error) {
+        return {
+            err: {
+                menssage: 'Error al subir imagen a servidor remoto',
+                error: '',
+            },
+            status: 500,
+        };
+    }
 
     try {
         let publication = new publicationSchema({
@@ -179,11 +184,10 @@ export async function save(data) {
             category,
             likes: [],
             unLikes: [],
-            img : responseImg,
+            img: responseImg,
             createdAt: new Date(),
             createdBy: { _id: userFound._id, userName: userFound.userName },
         });
-
 
         const respSave = await publication.save();
 
@@ -191,4 +195,77 @@ export async function save(data) {
     } catch (e) {
         return { err: e, status: 500, publication: null };
     }
+}
+
+/**
+ * Solo se actualizan una publicación para editar atributos likes, unlikes
+ * en publications
+ * @param {*} unPublication contiene la publicación a actualizar
+ */
+export async function update(id, unPublication) {
+    let likes = unPublication.likes;
+    let unLikes = unPublication.unLikes;
+    if (!id || !likes || !unLikes) {
+        return {
+            err: { menssage: 'Faltan parámetros requeridos' },
+            status: 400,
+        };
+    }
+    const resp = await getById(id);
+    if (resp.err && !resp.publication) {
+        return resp;
+    } else {
+        let publication = new publicationSchema(resp.publication);
+        try {
+            // verficamos que los usuario existan en la BD y esten activos
+            likes = (await filterUser(likes)) || [];
+            unLikes = (await filterUser(unLikes)) || [];
+
+            // verificamos que el usuario no se repita en ambos array,
+            // usuario repetido => se elimina de ambos
+            const arrays = await clearLikes(likes, unLikes);
+            publication.likes = arrays.likes;
+            publication.unLikes = arrays.unLikes;
+            // guardamos la publicacion actualizada
+            const respPub = await publication.save();
+            return { err: null, publication: respPub };
+        } catch (err) {
+            return { err, status: 500, publication: null };
+        }
+    }
+}
+
+/**
+ *  filtramos usuarios de los arrays que existan y estén activos
+ * @param {*} arrayUser con ids de usuarios
+ */
+export async function filterUser(arrayUser) {
+    const userLikes = await arrayUser.filter(async (idUsr) => {
+        // obtenemos el usuario de la BD
+        const usrResp = await ctrUser.getById(idUsr._id);
+        return (!usrResp.err && !usrResp) || !usrResp.active;
+    });
+    return userLikes;
+}
+
+/**
+ * eliminamos usuarios repetidos en ambos arrays
+ * @param {*} arrayUser
+ */
+export async function clearLikes(arrayLikes, arrayUnLikes) {
+    if (arrayLikes?.length && arrayUnLikes?.length) {
+        // recorremos el arrayUnLikes para verificar si estan en arrayLikes
+        arrayUnLikes.forEach(async (idUsr, index) => {
+            //obtenemos la posición del idUsr en el array de likes
+            const pos = arrayLikes.findIndex(
+                (idObj) => idUsr._id === idObj._id
+            );
+            if (pos >= 0) {
+                //como el usuario está en ambos array lo borramos en los dos
+                arrayLikes.splice(pos, 1);
+                arrayUnLikes.splice(index, 1);
+            }
+        });
+    }
+    return { likes: arrayLikes, unLikes: arrayUnLikes };
 }
