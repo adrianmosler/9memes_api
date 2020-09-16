@@ -7,7 +7,8 @@ import bodyParser from 'body-parser';
 import session from 'express-session';
 // import auth
 import passport from 'passport';
-import * as auth from './auth/authentication-jwt';
+
+import initJwt from './auth/authentication-jwt';
 
 // import routes
 import { publicationRoutes } from './routes/publication.route';
@@ -32,6 +33,7 @@ app.use(
         saveUninitialized: true,
     })
 );
+initJwt(passport);
 app.use(passport.initialize());
 app.use(passport.session());
 
