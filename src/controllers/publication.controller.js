@@ -100,9 +100,11 @@ export async function getById(id) {
  * @param {} data recibe los datos de la publicacion al guardar
  */
 export async function save(data) {
-    const user = JSON.parse(data.body.user);
+    const user = data.body.user ? JSON.parse(data.body.user) : null;
     const img = data.files?.img; // falta
-    const categoryArray = JSON.parse(data.body.category);
+    const categoryArray = data.body.category
+        ? JSON.parse(data.body.category)
+        : null;
 
     if (
         !data.body.title ||

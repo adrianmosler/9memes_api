@@ -4,8 +4,6 @@ import { publicationSchema } from '../models/publication.schema';
 import * as path from 'path';
 import * as fs from 'fs';
 import passport from 'passport';
-import * as milddware from '../auth/authentication-jwt';
-//require('./../auth/authentication-jwt')(passport);
 import userSchema from './../models/user.schema';
 
 const router = express.Router();
@@ -67,58 +65,45 @@ router.get('/img/:img', async function (req, res) {
     else res.sendFile(pathNoImg);
 });
 
-const getToken = function (headers) {
-    if (headers && headers.authorization) {
-        var parted = headers.authorization.split(' ');
-        if (parted.length === 2) {
-            return parted[1];
-        } else {
-            return null;
-        }
-    } else {
-        return null;
-    }
-};
-
 /**
- * middleware for checking authorization with jwt
+ * middleware para check authorización con jwt
  */
-async function authorized(req, res) {
+async function authorized(req, res, next) {
     await passport.authenticate(
         'jwt',
         { session: false },
         async (error, user) => {
-            console.log(
-                'ERROR: LLEGAN LOS DATOS VACIOS(error, user)=(NULL,FALSE)=>',
-                error,
-                user
-            );
             if (error || !user) {
                 res.status(401).json({ message: 'Unauthorized' });
             }
             try {
-                const user = await userSchema.findOne({ email: token.email });
-                return user;
+                const userFound = await userSchema.findOne({
+                    email: user.email,
+                });
+                req.user = userFound;
             } catch (err) {
-                return { err, status: 500 };
+                next({ err, status: 500 });
             }
+            next();
         }
-    )(req, res);
+    )(req, res, next);
 }
 
 router.post('/', authorized, async function (req, res) {
-    const resp = await ctrPublication.save(req);
-    if (resp.err) {
-        if (resp.status === 500) {
-            res.status(500).send({
-                message: 'Error al realizar la consulta',
-                error: resp.err,
-            });
+    if (req.user) {
+        const resp = await ctrPublication.save(req);
+        if (resp.err) {
+            if (resp.status === 500) {
+                res.status(500).send({
+                    message: 'Error al realizar la consulta',
+                    error: resp.err,
+                });
+            } else {
+                res.status(resp.status).send(resp.err);
+            }
         } else {
-            res.status(resp.status).send(resp.err);
+            res.send(resp.publication).status(resp.status);
         }
-    } else {
-        res.send(resp.publication).status(resp.status);
     }
 });
 
