@@ -60,6 +60,7 @@ export async function getAllPublications(data) {
 
         listPublications = await publicationSchema
             .find(query)
+            .sort({ createdAt: -1 })
             .skip(data.skip)
             .limit(data.limit);
 
