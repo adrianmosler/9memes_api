@@ -1,6 +1,6 @@
 import * as express from 'express';
 import * as ctrPublication from '../controllers/publication.controller';
-import { publicationSchema } from '../models/publication.schema';
+// import { publicationSchema } from '../models/publication.schema';
 import * as path from 'path';
 import * as fs from 'fs';
 const router = express.Router();
@@ -54,16 +54,15 @@ router.get('/:id', async function (req, res) {
     }
 });
 
-router.get('/img/:img', async function(req, res){
-    const pathImg = path.resolve(__dirname, '../uploads/'+req.params.img);
+router.get('/img/:img', async function (req, res) {
+    const pathImg = path.resolve(__dirname, '../uploads/' + req.params.img);
     const pathNoImg = path.resolve(__dirname, '../assets/images/no_image.jpg');
 
-    if( fs.existsSync(pathImg) ) res.sendFile(pathImg);
+    if (fs.existsSync(pathImg)) res.sendFile(pathImg);
     else res.sendFile(pathNoImg);
 });
 
 router.post('/', async function (req, res) {
-    const body = req.body;
     const resp = await ctrPublication.save(req);
 
     if (resp.err) {
@@ -82,7 +81,19 @@ router.post('/', async function (req, res) {
 
 router.put('/:id', async function (req, res) {
     const id = req.params.id;
-    res.json({});
+    const pub = req.body;
+    const resp = await ctrPublication.update(id, pub);
+    if (resp.err) {
+        if (resp.status === 500) {
+            res.status(500).send({
+                message: 'Error al intentar actualizar el objeto',
+            });
+        } else {
+            res.status(resp.status).send(resp.err);
+        }
+    } else {
+        res.send(resp.publication).status(resp.status);
+    }
 });
 
 export const publicationRoutes = router;

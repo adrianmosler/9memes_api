@@ -7,7 +7,15 @@ export let publicationSchema = new Schema({
         type: String,
         required: false, //TODO regresar a true
     },
-    likes: [{ type: Schema.Types.ObjectId, ref: 'usuario', required: false }],
+    likes: [
+        {
+            _id: {
+                type: Schema.Types.ObjectId,
+                ref: 'usuario',
+                required: false,
+            },
+        },
+    ],
     unLikes: [{ type: Schema.Types.ObjectId, ref: 'usuario', required: false }],
     // "category" queda embebida en el esquema "publication" con los datos necesarios
     category: [
@@ -29,7 +37,7 @@ export let publicationSchema = new Schema({
     createdAt: Date,
     createdBy: {
         _id: { type: Schema.Types.ObjectId, ref: 'user' },
-        userName: { type: String, required: false },//TODO regresar a true
+        userName: { type: String, required: false }, //TODO regresar a true
     },
 });
 
