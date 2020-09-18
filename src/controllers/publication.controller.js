@@ -1,5 +1,6 @@
-import publicationSchema from '../models/publication.schema';
 import mongoose from 'mongoose';
+import moment from 'moment';
+import publicationSchema from '../models/publication.schema';
 import * as ctrCategory from '../controllers/category.controller';
 import * as ctrUser from '../controllers/user.controller';
 const cloudinary = require('cloudinary');
@@ -12,7 +13,6 @@ const cloudinary = require('cloudinary');
 // queda pendiente probar get con más likes (param moreLikes = true) y por un rango de fecha recibido
 //(fechaIni / fechaFin) si no  se reciben las fechas puede asumirse las del día
 // sort(-1) por fecha de creacion del meme
-// ver si se cambian de estado? (active)
 export async function getAllPublications(data) {
     let listPublications = [];
     let idCategory = data.filters?.idCategory;
@@ -21,51 +21,113 @@ export async function getAllPublications(data) {
         ? data.filters.title.trim().toLowerCase()
         : null;
 
+    // obtenemos parámetros para publicaciones más likes o más unLikes en un periodo de fecha
+    const moreDisLikes = data.filters?.moreDisLikes;
+    const moreLikes = data.filters?.moreLikes === 'true';
+    let dateIni = data.filters?.dateIni;
+    let dateFin = data.filters?.dateIni;
     try {
-        if (title) {
-            if (title.substr(0, 1) === '^') {
-                // si contiene ^ => generamos buqueda por substring con ignoreCase
-                title = RegExp(`${title.slice(1)}`, 'i');
+        if (moreLikes || moreDisLikes) {
+            // si se quieren todas las publicaciones con más likes o más unlikes
+            //(dateIni) = dateIni ? new Date(dateIni):new Date();
+            if (!dateIni) {
+                // 1 día anterior desde hora actual
+                dateIni = moment().subtract(10, 'days').toDate();
             }
-            filters.push({ title });
-            delete data.filters.title;
-        }
-
-        if (idCategory) {
-            if (idCategory && mongoose.isValidObjectId(idCategory)) {
-                // si tiene id y si es un id válido
-                filters.push({ 'category._id': idCategory });
+            if (!dateFin) {
+                // fecha y hora actual
+                dateFin = moment().toDate();
             }
-            delete data.filters.idCategory;
+            const orderBy = moreLikes ? '$likes' : '$unLikes';
+            const pipeline = [
+                {
+                    $match: {
+                        $and: [
+                            {
+                                createdAt: {
+                                    $gte: dateIni,
+                                    $lte: dateFin,
+                                },
+                            },
+                        ],
+                    },
+                },
+                // Project with an array length 10
+                {
+                    $project: {
+                        likes: 1,
+                        unLikes: 1,
+                        title: 1,
+                        description: 1,
+                        category: 1,
+                        img: 1,
+                        createdAt: 1,
+                        createdBy: 1,
+                        length: { $size: orderBy },
+                    },
+                },
+
+                // Sort on the "length"
+                { $sort: { length: -1 } },
+
+                // Project if you really want
+                {
+                    $project: {
+                        likes: 1,
+                        unLikes: 1,
+                        title: 1,
+                        description: 1,
+                        category: 1,
+                        img: 1,
+                        createdAt: 1,
+                        createdBy: 1,
+                        length: -1,
+                    },
+                },
+            ];
+            listPublications = await publicationSchema
+                .aggregate(pipeline)
+                .skip(data.skip)
+                .limit(data.limit);
+        } else {
+            if (title) {
+                if (title.substr(0, 1) === '^') {
+                    // si contiene ^ => generamos buqueda por substring con ignoreCase
+                    title = RegExp(`${title.slice(1)}`, 'i');
+                }
+                filters.push({ title });
+                delete data.filters.title;
+            }
+
+            if (idCategory) {
+                if (idCategory && mongoose.isValidObjectId(idCategory)) {
+                    // si tiene id y si es un id válido
+                    filters.push({ 'category._id': idCategory });
+                }
+                delete data.filters.idCategory;
+            }
+
+            if (Object.keys(data.filters).length) {
+                // si tiene más elementos para filtrar se concatenan
+                filters = filters.concat([data.filters]);
+            }
+
+            // generamos la query para el find
+            const query = !filters.length
+                ? {}
+                : filters.length > 1
+                ? { $and: filters }
+                : filters[0];
+
+            listPublications = await publicationSchema
+                .find(query)
+                .sort({ createdAt: -1 })
+                .skip(data.skip)
+                .limit(data.limit);
         }
-
-        // quedan pendientes todas las publicaciones con más likes
-        if (data.filters.likes) {
-        }
-
-        //ver si se cambian de estado?
-        // filters.push({ active: true });
-
-        if (Object.keys(data.filters).length) {
-            // si tiene más elementos para filtrar se concatenan
-            filters = filters.concat([data.filters]);
-        }
-
-        // generamos la query para el find
-        const query = !filters.length
-            ? {}
-            : filters.length > 1
-            ? { $and: filters }
-            : filters[0];
-
-        listPublications = await publicationSchema
-            .find(query)
-            .sort({ createdAt: -1 })
-            .skip(data.skip)
-            .limit(data.limit);
-
         return { listPublications };
     } catch (err) {
+        console.log(err);
         return { err, status: 500, listPublications };
     }
 }
