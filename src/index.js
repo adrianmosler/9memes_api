@@ -11,6 +11,7 @@ import { publicationRoutes } from './routes/publication.route';
 import { userRoutes } from './routes/user.route';
 import { commentRoutes } from './routes/comment.route';
 import { categoryRoutes } from './routes/category.route';
+import { loginRoutes } from './routes/login.route';
 
 const app = express();
 // Importamos variables globales
@@ -29,6 +30,7 @@ app.use('/publication', publicationRoutes);
 app.use('/user', userRoutes);
 app.use('/comment', commentRoutes);
 app.use('/category', categoryRoutes);
+app.use('/login', loginRoutes);
 
 app.get('/', function (req, res) {
     res.json({ mensaje: 'Bienvenidos al servidor de 9 MEMES' });
